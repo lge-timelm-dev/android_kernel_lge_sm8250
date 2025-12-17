@@ -53,8 +53,6 @@
 
 #include <trace/events/tcp.h>
 
-#ifdef CONFIG_LGP_DATA_TCPIP_MPTCP
-#else
 /* Refresh clocks of a TCP socket,
  * ensuring monotically increasing values.
  */
@@ -70,10 +68,14 @@ void tcp_mstamp_refresh(struct tcp_sock *tp)
 		tp->tcp_mstamp = val;
 }
 
+#ifdef CONFIG_LGP_DATA_TCPIP_MPTCP
+bool tcp_write_xmit(struct sock *sk, unsigned int mss_now, int nonagle,
+			   int push_one, gfp_t gfp);
+#else
 static bool tcp_write_xmit(struct sock *sk, unsigned int mss_now, int nonagle,
 			   int push_one, gfp_t gfp);
-
 #endif
+
 /* Account for new data that has been sent to the network. */
 #ifdef CONFIG_LGP_DATA_TCPIP_MPTCP
 void tcp_event_new_data_sent(struct sock *sk, struct sk_buff *skb)

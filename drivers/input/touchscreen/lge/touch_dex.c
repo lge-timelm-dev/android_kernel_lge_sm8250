@@ -30,8 +30,8 @@ static int touch_set_input_prop(struct touch_core_data *ts, struct input_dev *in
 			ts->caps.max_x, 0, 0);
 	input_set_abs_params(input, ABS_MT_POSITION_Y, 0,
 			ts->caps.max_y, 0, 0);
-	set_bit(INPUT_PROP_POINTER, input->propbit);
-	ret = input_mt_init_slots(input, MAX_FINGER_DEX, INPUT_PROP_POINTER);
+	set_bit(INPUT_PROP_DIRECT, input->propbit);
+	ret = input_mt_init_slots(input, MAX_FINGER_DEX, 0);
 	if (ret < 0) {
 		TOUCH_E("failed to init slots (ret:%d)\n", ret);
 		return -EAGAIN;

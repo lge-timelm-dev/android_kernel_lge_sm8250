@@ -291,7 +291,7 @@ static struct sock *tcp_fastopen_create_child(struct sock *sk,
 	}
 
 	/* Now finish processing the fastopen child socket. */
-	tcp_init_transfer(child, BPF_SOCK_OPS_PASSIVE_ESTABLISHED_CB);
+	tcp_init_transfer(child, BPF_SOCK_OPS_PASSIVE_ESTABLISHED_CB, skb);
 #endif
 
 	/* tcp_conn_request() is sending the SYNACK,

@@ -1073,10 +1073,11 @@ static void tcp_v4_reqsk_send_ack(const struct sock *sk, struct sk_buff *skb,
  */
 #ifdef CONFIG_LGP_DATA_TCPIP_MPTCP
 int tcp_v4_send_synack(const struct sock *sk, struct dst_entry *dst,
-		       struct flowi *fl,
-		       struct request_sock *req,
-		       struct tcp_fastopen_cookie *foc,
-		       enum tcp_synack_type synack_type)
+			      struct flowi *fl,
+			      struct request_sock *req,
+			      struct tcp_fastopen_cookie *foc,
+			      enum tcp_synack_type synack_type,
+			      struct sk_buff *syn_skb)
 #else
 static int tcp_v4_send_synack(const struct sock *sk, struct dst_entry *dst,
 			      struct flowi *fl,
