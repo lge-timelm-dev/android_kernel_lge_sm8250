@@ -267,30 +267,17 @@ void  ams_deviceGetSWFlicker(ams_deviceCtx_t * ctx, ams_apiAlsFlicker_t * export
 bool ams_deviceGetFlicker(ams_deviceCtx_t * ctx, ams_apiAlsFlicker_t * exportData){
     ams_flicker_ctx_t *flickerCtx = (ams_flicker_ctx_t *)&ctx->flickerCtx;
 
-    if (flickerCtx->statusReg & FD_100HZ_VALID)
-        exportData->freq100Hz = flickerCtx->lastValid.freq100Hz =
-            (flickerCtx->statusReg & FD_100HZ_FLICKER) ? PRESENT : ABSENT;
-    else
-        exportData->freq100Hz = flickerCtx->lastValid.freq100Hz;
-
-    if (flickerCtx->statusReg & FD_120HZ_VALID)
-        exportData->freq120Hz = flickerCtx->lastValid.freq120Hz =
-            (flickerCtx->statusReg & FD_120HZ_FLICKER) ? PRESENT : ABSENT;
-    else
-        exportData->freq120Hz = flickerCtx->lastValid.freq120Hz;
-
-    if ((exportData->freq100Hz == PRESENT) && (exportData->freq120Hz == PRESENT))
-        exportData->mHz = flickerCtx->lastValid.mHz = (uint32_t)(ULONG_MAX);
-    else if (exportData->freq100Hz == PRESENT)
-
-        exportData->mHz = flickerCtx->lastValid.mHz = 100;
- 
-    else if (exportData->freq120Hz == PRESENT)
-															   
-        exportData->mHz = flickerCtx->lastValid.mHz = 120;
-
-    else
-        exportData->mHz = 0;
+    if ((exportData->freq100Hz == PRESENT) &&
+        (exportData->freq120Hz == PRESENT)) {
+            exportData->mHz = flickerCtx->lastValid.mHz =
+                    (uint32_t)ULONG_MAX;
+    } else if (exportData->freq100Hz == PRESENT) {
+            exportData->mHz = flickerCtx->lastValid.mHz = 100;
+    } else if (exportData->freq120Hz == PRESENT) {
+            exportData->mHz = flickerCtx->lastValid.mHz = 120;
+    } else {
+            exportData->mHz = 0;
+    }
 
 
 	exportData->flicker_raw_data = flickerCtx->flicker_raw_data;

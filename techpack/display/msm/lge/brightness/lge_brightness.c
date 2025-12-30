@@ -798,8 +798,9 @@ static ssize_t br_offset_store(struct device *dev,
 	panel->lge.br_offset = data;
 	pr_info("request=%d\n", panel->lge.br_offset);
 
-    if (panel->lge.br_offset_bypass)
+    if (panel->lge.br_offset_bypass) {
         panel->lge.br_offset_bypass = false;
+	}
 
 	return ret;
 }

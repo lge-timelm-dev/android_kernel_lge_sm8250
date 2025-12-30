@@ -576,11 +576,12 @@ static ssize_t dual_role_store_property(struct device *dev,
 	case DUAL_ROLE_PROP_VCONN_SUPPLY:
 		ret = strtobool(dup_buf, &result);
 		value = result;
-		if (!ret)
+		if (!ret) {
 			goto setprop;
-		else
+		} else {
 			ret = -EINVAL;
 			goto error;
+		}
 		break;
 	default:
 		ret = -EINVAL;

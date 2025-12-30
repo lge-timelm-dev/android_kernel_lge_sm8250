@@ -651,6 +651,31 @@ static int mptcp_fragment(struct sock *meta_sk, enum tcp_queue tcp_queue,
 	return 0;
 }
 
+static void tcp_update_skb_after_send(struct sock *sk, struct sk_buff *skb,
+				      u64 prior_wstamp)
+{
+	struct tcp_sock *tp = tcp_sk(sk);
+
+	skb->skb_mstamp_ns = tp->tcp_wstamp_ns;
+	if (sk->sk_pacing_status != SK_PACING_NONE) {
+		unsigned long rate = sk->sk_pacing_rate;
+
+		/* Original sch_fq does not pace first 10 MSS
+		 * Note that tp->data_segs_out overflows after 2^32 packets,
+		 * this is a minor annoyance.
+		 */
+		if (rate != ~0UL && rate && tp->data_segs_out >= 10) {
+			u64 len_ns = div64_ul((u64)skb->len * NSEC_PER_SEC, rate);
+			u64 credit = tp->tcp_wstamp_ns - prior_wstamp;
+
+			/* take into account OS jitter */
+			len_ns -= min_t(u64, len_ns / 2, credit);
+			tp->tcp_wstamp_ns += len_ns;
+		}
+	}
+	list_move_tail(&skb->tcp_tsorted_anchor, &tp->tsorted_sent_queue);
+}
+
 /* Inspired by tcp_write_wakeup */
 int mptcp_write_wakeup(struct sock *meta_sk, int mib)
 {
@@ -707,7 +732,7 @@ int mptcp_write_wakeup(struct sock *meta_sk, int mib)
 		tcp_event_new_data_sent(meta_sk, skb);
 
 		__tcp_push_pending_frames(subsk, mss, TCP_NAGLE_PUSH);
-		tcp_update_skb_after_send(meta_tp, skb);
+		tcp_update_skb_after_send((struct sock *)meta_tp, skb, skb->tstamp);
 		meta_tp->lsndtime = tcp_jiffies32;
 
 		return 0;
@@ -856,7 +881,7 @@ bool mptcp_write_xmit(struct sock *meta_sk, unsigned int mss_now, int nonagle,
 		 */
 		__tcp_push_pending_frames(subsk, mss_now, TCP_NAGLE_PUSH);
 		if (reinject <= 0)
-			tcp_update_skb_after_send(meta_tp, skb);
+			tcp_update_skb_after_send((struct sock *)meta_tp, skb, skb->tstamp);
 		meta_tp->lsndtime = tcp_jiffies32;
 
 		path_mask |= mptcp_pi_to_flag(subtp->mptcp->path_index);
@@ -1595,7 +1620,7 @@ int mptcp_retransmit_skb(struct sock *meta_sk, struct sk_buff *skb)
 	}
 
 	__tcp_push_pending_frames(subsk, mss_now, TCP_NAGLE_PUSH);
-	tcp_update_skb_after_send(meta_tp, skb);
+	tcp_update_skb_after_send((struct sock *)meta_tp, skb, skb->tstamp);
 	meta_tp->lsndtime = tcp_jiffies32;
 
 	return 0;

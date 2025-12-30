@@ -821,8 +821,8 @@ u32 mptcp_seed = 0;
 
 static void mptcp_key_sha1(u64 key, u32 *token, u64 *idsn)
 {
-	u32 workspace[SHA_WORKSPACE_WORDS];
-	u32 mptcp_hashed_key[SHA_DIGEST_WORDS];
+	u32 workspace[SHA1_WORKSPACE_WORDS];
+	u32 mptcp_hashed_key[SHA1_DIGEST_WORDS];
 	u8 input[64];
 	int i;
 
@@ -836,8 +836,8 @@ static void mptcp_key_sha1(u64 key, u32 *token, u64 *idsn)
 	input[8] = 0x80; /* Padding: First bit after message = 1 */
 	input[63] = 0x40; /* Padding: Length of the message = 64 bits */
 
-	sha_init(mptcp_hashed_key);
-	sha_transform(mptcp_hashed_key, input, workspace);
+	sha1_init(mptcp_hashed_key);
+	sha1_transform(mptcp_hashed_key, input, workspace);
 
 	for (i = 0; i < 5; i++)
 		mptcp_hashed_key[i] = (__force u32)cpu_to_be32(mptcp_hashed_key[i]);
@@ -851,7 +851,7 @@ static void mptcp_key_sha1(u64 key, u32 *token, u64 *idsn)
 void mptcp_hmac_sha1(const u8 *key_1, const u8 *key_2, u32 *hash_out,
 		     int arg_num, ...)
 {
-	u32 workspace[SHA_WORKSPACE_WORDS];
+	u32 workspace[SHA1_WORKSPACE_WORDS];
 	u8 input[128]; /* 2 512-bit blocks */
 	int i;
 	int index;
@@ -886,11 +886,11 @@ void mptcp_hmac_sha1(const u8 *key_1, const u8 *key_2, u32 *hash_out,
 	input[126] = 0x02;
 	input[127] = ((index - 64) * 8); /* Message length (bits) */
 
-	sha_init(hash_out);
-	sha_transform(hash_out, input, workspace);
+	sha1_init(hash_out);
+	sha1_transform(hash_out, input, workspace);
 	memset(workspace, 0, sizeof(workspace));
 
-	sha_transform(hash_out, &input[64], workspace);
+	sha1_transform(hash_out, &input[64], workspace);
 	memset(workspace, 0, sizeof(workspace));
 
 	for (i = 0; i < 5; i++)
@@ -911,11 +911,11 @@ void mptcp_hmac_sha1(const u8 *key_1, const u8 *key_2, u32 *hash_out,
 	input[126] = 0x02;
 	input[127] = 0xA0;
 
-	sha_init(hash_out);
-	sha_transform(hash_out, input, workspace);
+	sha1_init(hash_out);
+	sha1_transform(hash_out, input, workspace);
 	memset(workspace, 0, sizeof(workspace));
 
-	sha_transform(hash_out, &input[64], workspace);
+	sha1_transform(hash_out, &input[64], workspace);
 
 	for (i = 0; i < 5; i++)
 		hash_out[i] = (__force u32)cpu_to_be32(hash_out[i]);

@@ -1567,13 +1567,15 @@ int rtc6226_power_up(struct rtc6226_device *radio)
 	radio->registers[PADCFG] &= ~PADCFG_CSR0_GPIO;
 	radio->registers[PADCFG] |= 0x1 << 2;
 	retval = rtc6226_set_register(radio, PADCFG);
-	if (retval < 0)
+	if (retval < 0) {
 		goto done;
 		/* I2S salve */
 		radio->registers[I2SCFG] = 0x2480;
 		retval = rtc6226_set_register(radio, I2SCFG);
-		if (retval < 0)
+		if (retval < 0) {
 			goto done;
+		}
+	}
 
 		/*set default rssi threshold*/
 		retval = rtc6226_set_rssi_threshold(radio, DEFAULT_RSSI_TH);
